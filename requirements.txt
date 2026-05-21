@@ -1,0 +1,12 @@
+# Robot Grid Navigation System Requirements
+
+# Core Dependencies (for command-line use only):
+# - random: Standard library for obstacle generation
+# - typing: Standard library for type hints
+
+# Web Visualization Requirements:
+Flask==2.3.0
+Werkzeug==2.3.0
+
+# Python version requirement:
+# Python 3.7 or higher

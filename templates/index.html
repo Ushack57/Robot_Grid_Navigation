@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Grid Navigation Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 250px;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .grid-container {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .grid-title {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        #gridCanvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-title {
+            font-size: 0.95em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8em;
+            color: #555;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.8em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-value {
+            min-width: 30px;
+            text-align: right;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.8em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 6px;
+            flex-direction: column;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+            border-color: #667eea;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .legend {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .legend-title {
+            font-size: 0.75em;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+            font-size: 0.9em;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .legend-box.start {
+            background: #4caf50;
+        }
+
+        .legend-box.goal {
+            background: #ff9800;
+        }
+
+        .legend-box.robot {
+            background: #2196f3;
+        }
+
+        .legend-box.path {
+            background: #9c27b0;
+        }
+
+        .legend-box.obstacle {
+            background: #333;
+        }
+
+        .legend-box.empty {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 8px 0;
+        }
+
+        .loading p {
+            font-size: 0.75em;
+            color: #667eea;
+            margin-top: 4px;
+        }
+
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 4px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .legend-title {
+            font-size: 0.75em;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+            font-size: 0.75em;
+        }
+
+        .legend-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .legend-box.start {
+            background: #4caf50;
+        }
+
+        .legend-box.goal {
+            background: #ff9800;
+        }
+
+        .legend-box.robot {
+            background: #2196f3;
+        }
+
+        .legend-box.path {
+            background: #9c27b0;
+        }
+
+        .legend-box.obstacle {
+            background: #333;
+        }
+
+        .legend-box.empty {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+
+        .status-message {
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            display: none;
+            font-size: 0.8em;
+        }
+
+        .status-message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 3px solid #4caf50;
+        }
+
+        .status-message.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 3px solid #f44336;
+        }
+
+        .status-message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 3px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Robot Grid Navigation Visualizer</h1>
+            <p>Watch the intelligent robot navigate from start to goal while avoiding obstacles</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Grid Display -->
+            <div class="grid-container">
+                <div class="grid-title">Grid Visualization</div>
+                <canvas id="gridCanvas"></canvas>
+                <div class="legend">
+                    <div class="legend-title">Legend</div>
+                    <div class="legend-item">
+                        <div class="legend-box start"></div>
+                        <span>Start Position</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box goal"></div>
+                        <span>Goal Position</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box robot"></div>
+                        <span>Robot Current</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box path"></div>
+                        <span>Robot Path</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box obstacle"></div>
+                        <span>Obstacle</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box empty"></div>
+                        <span>Empty Space</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <div class="control-title">⚙️ Controls</div>
+                    <div class="status-message" id="statusMessage"></div>
+
+                    <div class="button-group">
+                        <button class="btn-primary" id="runButton" onclick="runSimulation()">
+                            ▶️ Run Simulation
+                        </button>
+                        <button class="btn-secondary" id="pauseButton" onclick="togglePause()" style="display: none;">
+                            ⏸️ Pause
+                        </button>
+                        <button class="btn-secondary" id="resetButton" onclick="resetVisualization()" style="display: none;">
+                            🔄 Reset
+                        </button>
+                    </div>
+
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Generating simulation...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const GRID_SIZE = 10;
+        const CELL_SIZE = 35;  // Reduced from 50 to fit on one screen
+        const COLORS = {
+            empty: '#ffffff',
+            obstacle: '#333333',
+            path: '#9c27b0',
+            robot: '#2196f3',
+            start: '#4caf50',
+            goal: '#ff9800',
+            grid: '#ddd'
+        };
+
+        // State
+        let simulationData = null;
+        let simulationStatus = null;
+        let isAnimating = false;
+        let isPaused = false;
+        let currentStep = 0;
+        let animationId = null;
+
+        // Canvas setup
+        const canvas = document.getElementById('gridCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = GRID_SIZE * CELL_SIZE;
+        canvas.height = GRID_SIZE * CELL_SIZE;
+
+        async function runSimulation() {
+            // Use default values
+            const density = 0.15;
+            const seed = null;
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('runButton').disabled = true;
+
+            try {
+                const response = await fetch('/api/new-simulation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        obstacle_density: density,
+                        seed: seed
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    simulationData = data;
+                    currentStep = 0;
+                    isAnimating = true;
+                    isPaused = false;
+
+                    // Update UI
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('runButton').style.display = 'none';
+                    document.getElementById('pauseButton').style.display = 'block';
+                    document.getElementById('resetButton').style.display = 'block';
+
+                    // Show status (will be updated when animation completes)
+                    const statusMsg = document.getElementById('statusMessage');
+                    statusMsg.style.display = 'none';
+                    // Show final status after animation completes
+                    simulationStatus = data.simulation_success;
+
+                    // Start animation
+                    animate();
+                } else {
+                    showError('Failed to generate simulation: ' + data.error);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('runButton').disabled = false;
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('runButton').disabled = false;
+            }
+        }
+
+        function animate() {
+            if (!isAnimating) return;
+            if (isPaused) {
+                animationId = requestAnimationFrame(animate);
+                return;
+            }
+
+            if (simulationData && currentStep <= simulationData.movement_history.length - 1) {
+                draw();
+
+                // Calculate speed (default 1x)
+                const speed = 1;
+                const delay = 500 / speed; // 500ms base delay
+
+                currentStep++;
+                setTimeout(() => {
+                    animationId = requestAnimationFrame(animate);
+                }, delay);
+            } else if (currentStep > simulationData.movement_history.length - 1) {
+                // Animation complete
+                isAnimating = false;
+                draw(); // Final frame
+                
+                // Show final status message
+                const statusMsg = document.getElementById('statusMessage');
+                if (simulationStatus) {
+                    statusMsg.className = 'status-message success';
+                    statusMsg.innerHTML = '<strong>✓ Success!</strong> Robot reached the goal position in ' + 
+                        simulationData.total_steps + ' steps.';
+                } else {
+                    statusMsg.className = 'status-message error';
+                    statusMsg.innerHTML = '<strong>✗ Failure!</strong> No path exists to reach the goal from the start position.';
+                }
+                statusMsg.style.display = 'block';
+            }
+        }
+
+        function draw() {
+            if (!simulationData) return;
+
+            // Clear canvas
+            ctx.fillStyle = COLORS.empty;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = COLORS.grid;
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= GRID_SIZE; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * CELL_SIZE, 0);
+                ctx.lineTo(i * CELL_SIZE, canvas.height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i * CELL_SIZE);
+                ctx.lineTo(canvas.width, i * CELL_SIZE);
+                ctx.stroke();
+            }
+
+            // Draw obstacles
+            simulationData.obstacles.forEach(obs => {
+                drawCell(obs[0], obs[1], COLORS.obstacle);
+            });
+
+            // Draw path
+            const history = simulationData.movement_history.slice(1, currentStep);
+            history.forEach(pos => {
+                drawCell(pos[0], pos[1], COLORS.path);
+            });
+
+            // Draw start position
+            drawCell(simulationData.start_pos[0], simulationData.start_pos[1], COLORS.start);
+
+            // Draw goal position
+            drawCell(simulationData.goal_pos[0], simulationData.goal_pos[1], COLORS.goal);
+
+            // Draw current robot position
+            if (currentStep < simulationData.movement_history.length) {
+                const currentPos = simulationData.movement_history[currentStep];
+                drawCell(currentPos[0], currentPos[1], COLORS.robot);
+            }
+        }
+
+        function drawCell(x, y, color) {
+            const padding = 2;
+            ctx.fillStyle = color;
+            ctx.fillRect(
+                x * CELL_SIZE + padding,
+                y * CELL_SIZE + padding,
+                CELL_SIZE - 2 * padding,
+                CELL_SIZE - 2 * padding
+            );
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseButton');
+            btn.textContent = isPaused ? '▶️ Resume' : '⏸️ Pause';
+            if (!isPaused) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        function resetVisualization() {
+            isAnimating = false;
+            isPaused = false;
+            currentStep = 0;
+            simulationData = null;
+            simulationStatus = null;
+            cancelAnimationFrame(animationId);
+            
+            document.getElementById('runButton').style.display = 'block';
+            document.getElementById('pauseButton').style.display = 'none';
+            document.getElementById('resetButton').style.display = 'none';
+            document.getElementById('pauseButton').textContent = '⏸️ Pause';
+            document.getElementById('runButton').disabled = false;
+            
+            // Clear canvas
+            ctx.fillStyle = COLORS.empty;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Reset status message
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+
+        function showError(message) {
+            const statusMsg = document.getElementById('statusMessage');
+            statusMsg.className = 'status-message error';
+            statusMsg.textContent = '✕ ' + message;
+            statusMsg.style.display = 'block';
+        }
+
+        // Initial draw
+        document.getElementById('loading').style.display = 'none';
+        draw();
+    </script>
+</body>
+</html>

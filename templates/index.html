@@ -370,7 +370,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤖 Robot Grid Navigation Visualizer</h1>
+            <h1>Robot Grid Navigation simulation Visualizer</h1>
             <p>Watch the intelligent robot navigate from start to goal while avoiding obstacles</p>
         </div>
 
@@ -412,7 +412,7 @@
             <div class="sidebar">
                 <!-- Control Panel -->
                 <div class="control-panel">
-                    <div class="control-title">⚙️ Controls</div>
+                    <div class="control-title"> Controls</div>
                     <div class="status-message" id="statusMessage"></div>
 
                     <div class="button-group">
@@ -546,11 +546,11 @@
                 const statusMsg = document.getElementById('statusMessage');
                 if (simulationStatus) {
                     statusMsg.className = 'status-message success';
-                    statusMsg.innerHTML = '<strong>✓ Success!</strong> Robot reached the goal position in ' + 
+                    statusMsg.innerHTML = '<strong>Success</strong> Robot reached the goal position in ' + 
                         simulationData.total_steps + ' steps.';
                 } else {
                     statusMsg.className = 'status-message error';
-                    statusMsg.innerHTML = '<strong>✗ Failure!</strong> No path exists to reach the goal from the start position.';
+                    statusMsg.innerHTML = '<strong>Failure</strong> No path exists to reach the goal from the start position.';
                 }
                 statusMsg.style.display = 'block';
             }

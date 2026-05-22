@@ -13,10 +13,10 @@ import os
 def check_python():
     """Check if Python version is 3.7 or higher."""
     if sys.version_info < (3, 7):
-        print("✗ Error: Python 3.7 or higher required")
+        print("Error: Python 3.7 or higher required")
         print(f"  Current version: {sys.version}")
         return False
-    print(f"✓ Python {sys.version.split()[0]} found")
+    print(f"Python {sys.version.split()[0]} found")
     return True
 
 
@@ -24,19 +24,19 @@ def check_flask():
     """Check if Flask is installed, install if not."""
     try:
         import flask
-        print(f"✓ Flask {flask.__version__} found")
+        print(f"Flask {flask.__version__} found")
         return True
     except ImportError:
-        print("⚠ Flask not installed. Installing now...")
+        print("Flask not installed. Installing now...")
         try:
             subprocess.check_call([
                 sys.executable, '-m', 'pip', 'install',
                 'Flask==2.3.0', 'Werkzeug==2.3.0', '-q'
             ])
-            print("✓ Flask installed successfully")
+            print("Flask installed successfully")
             return True
         except subprocess.CalledProcessError:
-            print("✗ Failed to install Flask")
+            print("Failed to install Flask")
             return False
 
 
@@ -47,13 +47,13 @@ def start_server():
     print("║" + " Robot Grid Navigation - Web Visualizer ".center(60) + "║")
     print("╚" + "=" * 60 + "╝")
     print()
-    print("🚀 Starting Flask server...")
+    print("Starting Flask server...")
     print()
-    print("📱 Open your browser and navigate to:")
+    print("Open your browser and navigate to:")
     print()
     print("   ► http://localhost:5000")
     print()
-    print("⌨️  Press Ctrl+C to stop the server")
+    print("Press Ctrl+C to stop the server")
     print()
     print("=" * 62)
     print()
@@ -64,10 +64,10 @@ def start_server():
     except KeyboardInterrupt:
         print()
         print()
-        print("⏹️  Server stopped")
+        print("Server stopped")
         sys.exit(0)
     except Exception as e:
-        print(f"✗ Error: {e}")
+        print(f"Error: {e}")
         sys.exit(1)
 
 

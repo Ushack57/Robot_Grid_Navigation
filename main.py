@@ -8,8 +8,7 @@ Demonstrates the complete robot navigation system with:
 - Results visualization
 """
 
-from grid_environment import GridEnvironment
-from simulation import RobotSimulation
+from core import GridEnvironment, RobotSimulation
 
 
 def main():
@@ -85,7 +84,7 @@ def run_multiple_simulations(num_runs: int = 5):
         # Run simulation without verbose output
         results = simulation.run(verbose=False)
 
-        status = "✓ SUCCESS" if results['success'] else "✗ FAILED"
+        status = "SUCCESS" if results['success'] else "FAILED"
         print(f"{status}: Steps = {results['steps_taken']}, " +
               f"Final Distance = {results['distance_to_goal']}")
 

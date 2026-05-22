@@ -9,8 +9,7 @@ Provides a professional web interface for:
 """
 
 from flask import Flask, render_template, jsonify, request
-from grid_environment import GridEnvironment
-from simulation import RobotSimulation
+from core import GridEnvironment, RobotSimulation
 import json
 
 app = Flask(__name__)
